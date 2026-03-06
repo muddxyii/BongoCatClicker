@@ -11,20 +11,23 @@ from tkinter import font as tkfont
 pydirectinput.PAUSE = 0
 
 # ── CONFIG ──────────────────────────────────────────────────────────────────
-WINDOW_TITLE = "BongoCat"   # adjust if title differs in your language
-TOGGLE_KEY   = "p"
+BONGO_WINDOW_TITLE = "BongoCat" # adjust if title differs in your language
+WINDOW_TITLE = "Bongo Cat Clicker"   # adjust if title differs in your language
+TOGGLE_KEY   = "P"
 INTERVAL_MIN = 0.02
 INTERVAL_MAX = 0.03
 HOLD_MIN     = 0.03
 HOLD_MAX     = 0.04
 DEBOUNCE     = 0.4
-
+# ────────────────────────────────────────────────────────────────────────────
 KEYS = [
     'a','b','c','d','e','g','h','i','j','k','l','m',
-    'n','o','q','r','s','t','u','v','w','x','y','z',
-    '0','1','2','3','4','5','6','7','8','9',
+    'n','o','p','q','r','s','t','u','v','w','x','y',
+    'z','0','1','2','3','4','5','6','7','8','9'
 ]
-# ────────────────────────────────────────────────────────────────────────────
+
+if TOGGLE_KEY.lower() in KEYS:
+    KEYS.remove(TOGGLE_KEY.lower())
 
 running      = False
 lock         = threading.Lock()
@@ -34,10 +37,8 @@ btn_toggle   = None
 root         = None
 
 def find_and_focus():
-    hwnd = win32gui.FindWindow(None, WINDOW_TITLE)
+    hwnd = win32gui.FindWindow(None, BONGO_WINDOW_TITLE)
     if hwnd and win32gui.IsWindow(hwnd):
-        win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
-        win32gui.SetForegroundWindow(hwnd)
         return True
     return False
 
@@ -60,7 +61,7 @@ def auto_press_loop():
             time.sleep(0.05)
             continue
 
-        # refocus Bongo Cat every 10 seconds so the GUI never steals focus
+        # check if Bongo Cat is still running every 10 seconds
         now = time.time()
         if now - last_focus > 10.0:
             find_and_focus()
@@ -95,12 +96,13 @@ def toggle_running():
                 running = False
             return
         set_status("● Running", "#00ff88")
-        btn_toggle.config(text="■ Stop  [P]")
+        btn_toggle.config(text="■ Stop  [" + TOGGLE_KEY + "]")
     else:
         set_status("● Stopped", "#ff4444")
-        btn_toggle.config(text="▶ Start  [P]")
+        btn_toggle.config(text="▶ Start  [" + TOGGLE_KEY + "]")
 
 def on_hotkey(event):
+    root.focus_force()
     toggle_running()
 
 def on_close():
@@ -109,11 +111,17 @@ def on_close():
         running = False
     root.destroy()
 
+def on_focus_out(event):
+    global running
+    if running and event.widget == root:
+        root.focus_force()
+
+
 def build_gui():
     global root, status_label, btn_toggle
 
     root = tk.Tk()
-    root.title("Bongo Cat Clicker")
+    root.title(WINDOW_TITLE)
     root.geometry("280x160")
     root.resizable(False, False)
     root.configure(bg="#1e1e2e")
@@ -134,7 +142,7 @@ def build_gui():
     status_label.pack(pady=2)
 
     btn_toggle = tk.Button(
-        root, text="▶ Start  [P]", font=f_btn,
+        root, text="▶ Start  [" + TOGGLE_KEY + "]", font=f_btn,
         bg="#313244", fg="#cdd6f4", activebackground="#45475a",
         relief="flat", padx=12, pady=6, cursor="hand2",
         command=toggle_running
@@ -143,6 +151,8 @@ def build_gui():
 
     tk.Label(root, text="Bongo Cat must be open to start",
              font=f_hint, bg="#1e1e2e", fg="#6c7086").pack()
+    # root.bind("<FocusIn>"8, on_focus_in)
+    root.bind("<FocusOut>", on_focus_out)
 
     return root
 
@@ -150,5 +160,5 @@ if __name__ == "__main__":
     keyboard.on_press_key(TOGGLE_KEY, on_hotkey)
     threading.Thread(target=auto_press_loop, daemon=True).start()
     root = build_gui()
-    print("[INFO] P = Start/Stop | Close window to exit")
+    print("[INFO] " + TOGGLE_KEY + " = Start/Stop | Close window to exit")
     root.mainloop()
