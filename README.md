@@ -6,15 +6,13 @@ A script that automatically presses keys in Bongo Cat.
 - Bongo Cat (Steam)
 
 ## Installation
-Install the required libraries:
-```
-pip install pydirectinput pywin32 keyboard
-```
+Run `RUN.bat` — it will install dependencies and launch the bot automatically.
+
 ## Usage
 
 - Open Bongo Cat
-- Run the script
-- Press P to start/stop the bot
+- Run `RUN.bat`
+- Press F8 to start/stop the bot
 - Close the window to exit
 
 ## Notes
