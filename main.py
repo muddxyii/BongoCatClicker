@@ -13,21 +13,24 @@ pydirectinput.PAUSE = 0
 # ── CONFIG ──────────────────────────────────────────────────────────────────
 BONGO_WINDOW_TITLE = "BongoCat" # adjust if title differs in your language
 WINDOW_TITLE = "Bongo Cat Clicker"   # adjust if title differs in your language
-TOGGLE_KEY   = "P"
-INTERVAL_MIN = 0.02
-INTERVAL_MAX = 0.03
-HOLD_MIN     = 0.03
-HOLD_MAX     = 0.04
+TOGGLE_KEY   = "F8"
+INTERVAL_MIN = 0.005
+INTERVAL_MAX = 0.01
+HOLD_MIN     = 0.008
+HOLD_MAX     = 0.015
 DEBOUNCE     = 0.4
 # ────────────────────────────────────────────────────────────────────────────
 KEYS = [
-    'a','b','c','d','e','g','h','i','j','k','l','m',
+    'a','b','c','d','e','f','g','h','i','j','k','l','m',
     'n','o','p','q','r','s','t','u','v','w','x','y',
-    'z','0','1','2','3','4','5','6','7','8','9'
+    'z','0','1','2','3','4','5','6','7','8','9',
+    'numpad0','numpad1','numpad2','numpad3','numpad4',
+    'numpad5','numpad6','numpad7','numpad8','numpad9'
 ]
 
 if TOGGLE_KEY.lower() in KEYS:
     KEYS.remove(TOGGLE_KEY.lower())
+INPUTS = KEYS
 
 running      = False
 lock         = threading.Lock()
@@ -50,6 +53,17 @@ def press_key(key):
     except Exception as e:
         print(f"[press] Error on '{key}': {e}")
 
+def press_inputs(inputs):
+    try:
+        for input_name in inputs:
+            pydirectinput.keyDown(input_name)
+        time.sleep(random.uniform(HOLD_MIN, HOLD_MAX))
+        for input_name in inputs:
+            pydirectinput.keyUp(input_name)
+    except Exception as e:
+        print(f"[press_inputs] Error: {e}")
+
+
 def auto_press_loop():
     global running
     last_focus = 0.0
@@ -68,7 +82,7 @@ def auto_press_loop():
             last_focus = now
 
         try:
-            press_key(random.choice(KEYS))
+            press_inputs(INPUTS)
         except Exception as e:
             print(f"[loop] Error: {e}")
 
