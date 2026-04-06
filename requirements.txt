@@ -2,3 +2,6 @@ pydirectinput
 pywin32
 keyboard
 pyinstaller
+opencv-python
+numpy
+mss

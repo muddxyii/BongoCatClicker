@@ -1,11 +1,17 @@
+import os
+import sys
 import pydirectinput
 import win32gui
+import win32api
 import time
 import random
 import threading
 import keyboard
 import tkinter as tk
 from tkinter import font as tkfont
+import cv2
+import numpy as np
+import mss
 
 pydirectinput.PAUSE = 0
 
@@ -18,7 +24,19 @@ INTERVAL_MAX = 0.01
 HOLD_MIN = 0.008
 HOLD_MAX = 0.015
 DEBOUNCE = 0.4
+TEMPLATE_THRESHOLD = 0.8
 # ────────────────────────────────────────────────────────────────────────────
+
+if getattr(sys, "frozen", False):
+    BASE_DIR = sys._MEIPASS
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+REDEEM_ICONS = [
+    os.path.join(BASE_DIR, "icons", "redeem-accessories-icon.png"),
+    os.path.join(BASE_DIR, "icons", "redeem-emojis-icon.png"),
+]
+
 KEYS = [
     "a",
     "b",
@@ -75,10 +93,13 @@ INPUTS = KEYS
 running = False
 lock = threading.Lock()
 _last_toggle = 0.0
+redeeming = False
 status_label = None
 btn_toggle = None
 root = None
 auto_press_enabled = None
+auto_redeem_enabled = None
+redeem_countdown_label = None
 
 
 def find_and_focus():
@@ -125,13 +146,124 @@ def auto_press_loop():
             find_and_focus()
             last_focus = now
 
-        if auto_press_enabled and auto_press_enabled.get():
+        if auto_press_enabled and auto_press_enabled.get() and not redeeming:
             try:
                 press_inputs(INPUTS)
             except Exception as e:
                 print(f"[loop] Error: {e}")
 
         time.sleep(random.uniform(INTERVAL_MIN, INTERVAL_MAX))
+
+
+def capture_bongo_window():
+    hwnd = win32gui.FindWindow(None, BONGO_WINDOW_TITLE)
+    if not hwnd or not win32gui.IsWindow(hwnd):
+        return None, None
+    rect = win32gui.GetWindowRect(hwnd)
+    left, top, right, bottom = rect
+    with mss.mss() as sct:
+        monitor = {
+            "top": top,
+            "left": left,
+            "width": right - left,
+            "height": bottom - top,
+        }
+        img = sct.grab(monitor)
+        return np.array(img), rect
+
+
+def click_position(hwnd, x, y):
+    win32gui.SetForegroundWindow(hwnd)
+    time.sleep(0.1)
+    pydirectinput.click(x, y)
+
+
+def find_and_click_icons():
+    """Returns the number of icons successfully found and clicked."""
+    hwnd = win32gui.FindWindow(None, BONGO_WINDOW_TITLE)
+    if not hwnd or not win32gui.IsWindow(hwnd):
+        print("[redeem] Bongo Cat window not found")
+        return 0
+
+    screenshot, window_rect = capture_bongo_window()
+    if screenshot is None:
+        return 0
+
+    screenshot_bgr = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
+    clicked = 0
+    original_pos = win32api.GetCursorPos()
+
+    for icon_path in REDEEM_ICONS:
+        if not os.path.exists(icon_path):
+            print(f"[redeem] Icon not found: {icon_path}")
+            continue
+        template = cv2.imread(icon_path)
+        if template is None:
+            print(f"[redeem] Failed to load icon: {icon_path}")
+            continue
+        result = cv2.matchTemplate(screenshot_bgr, template, cv2.TM_CCOEFF_NORMED)
+        _, max_val, _, max_loc = cv2.minMaxLoc(result)
+        if max_val >= TEMPLATE_THRESHOLD:
+            h, w = template.shape[:2]
+            cx = window_rect[0] + max_loc[0] + w // 2
+            cy = window_rect[1] + max_loc[1] + h // 2
+            click_position(hwnd, cx, cy)
+            clicked += 1
+            print(
+                f"[redeem] Clicked {os.path.basename(icon_path)} (confidence: {max_val:.2f})"
+            )
+            time.sleep(0.5)
+        else:
+            print(
+                f"[redeem] {os.path.basename(icon_path)} not found (confidence: {max_val:.2f})"
+            )
+
+    win32api.SetCursorPos(original_pos)
+    return clicked
+
+
+def update_redeem_countdown(text):
+    if redeem_countdown_label and root:
+        root.after(0, lambda: redeem_countdown_label.config(text=text))
+
+
+def auto_redeem_loop():
+    global redeeming
+    next_redeem = 0.0  # 0 means search immediately
+    while True:
+        if not (auto_redeem_enabled and auto_redeem_enabled.get()):
+            update_redeem_countdown("")
+            next_redeem = 0.0
+            time.sleep(1)
+            continue
+
+        with lock:
+            is_running = running
+
+        if not is_running:
+            update_redeem_countdown("Waiting for start...")
+            next_redeem = 0.0
+            time.sleep(1)
+            continue
+
+        now = time.time()
+        if next_redeem > now:
+            remaining = next_redeem - now
+            mins = int(remaining) // 60
+            secs = int(remaining) % 60
+            update_redeem_countdown(f"Redeem in: {mins:02d}:{secs:02d}")
+            time.sleep(1)
+            continue
+
+        update_redeem_countdown("Searching...")
+        redeeming = True
+        time.sleep(0.1)
+        clicked = find_and_click_icons()
+        redeeming = False
+        if clicked == len(REDEEM_ICONS):
+            print("[redeem] Both icons clicked")
+            next_redeem = time.time() + (30 * 60 + 5)
+        time.sleep(5)
 
 
 def set_status(text, color):
@@ -177,16 +309,22 @@ def on_close():
 
 def on_focus_out(event):
     global running
-    if running and event.widget == root:
+    if running and not redeeming and event.widget == root:
         root.focus_force()
 
 
 def build_gui():
-    global root, status_label, btn_toggle, auto_press_enabled
+    global \
+        root, \
+        status_label, \
+        btn_toggle, \
+        auto_press_enabled, \
+        auto_redeem_enabled, \
+        redeem_countdown_label
 
     root = tk.Tk()
     root.title(WINDOW_TITLE)
-    root.geometry("280x190")
+    root.geometry("280x240")
     root.resizable(False, False)
     root.configure(bg="#1e1e2e")
     root.protocol("WM_DELETE_WINDOW", on_close)
@@ -237,6 +375,30 @@ def build_gui():
         cursor="hand2",
     ).pack()
 
+    auto_redeem_enabled = tk.BooleanVar(value=False)
+    tk.Checkbutton(
+        root,
+        text="Auto Redeem (every 30 min)",
+        variable=auto_redeem_enabled,
+        font=f_btn,
+        bg="#1e1e2e",
+        fg="#cdd6f4",
+        activebackground="#1e1e2e",
+        activeforeground="#cdd6f4",
+        selectcolor="#313244",
+        relief="flat",
+        cursor="hand2",
+    ).pack()
+
+    redeem_countdown_label = tk.Label(
+        root,
+        text="",
+        font=f_hint,
+        bg="#1e1e2e",
+        fg="#a6adc8",
+    )
+    redeem_countdown_label.pack()
+
     bongo_status_label = tk.Label(
         root,
         text="",
@@ -260,7 +422,6 @@ def build_gui():
 
     poll_bongo()
 
-    # root.bind("<FocusIn>"8, on_focus_in)
     root.bind("<FocusOut>", on_focus_out)
 
     return root
@@ -269,6 +430,7 @@ def build_gui():
 if __name__ == "__main__":
     keyboard.on_press_key(TOGGLE_KEY, on_hotkey)
     threading.Thread(target=auto_press_loop, daemon=True).start()
+    threading.Thread(target=auto_redeem_loop, daemon=True).start()
     root = build_gui()
     print("[INFO] " + TOGGLE_KEY + " = Start/Stop | Close window to exit")
     root.mainloop()
