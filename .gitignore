@@ -2,3 +2,4 @@
 build/
 dist/
 BongoCatManager.spec
+config.json

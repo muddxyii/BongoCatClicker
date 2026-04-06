@@ -7,6 +7,7 @@ try:
 except Exception:
     pass
 
+import json
 import pydirectinput
 import win32gui
 import win32api
@@ -43,6 +44,24 @@ REDEEM_ICONS = [
     os.path.join(BASE_DIR, "icons", "redeem-accessories-icon.png"),
     os.path.join(BASE_DIR, "icons", "redeem-emojis-icon.png"),
 ]
+CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
+
+
+def load_config():
+    try:
+        with open(CONFIG_PATH) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_config(data):
+    try:
+        with open(CONFIG_PATH, "w") as f:
+            json.dump(data, f)
+    except Exception as e:
+        print(f"[config] Failed to save: {e}")
+
 
 KEYS = [
     "a",
@@ -375,7 +394,18 @@ def build_gui():
     )
     btn_toggle.pack(pady=14)
 
-    auto_press_enabled = tk.BooleanVar(value=True)
+    cfg = load_config()
+
+    def on_setting_change(*_):
+        save_config(
+            {
+                "auto_press": auto_press_enabled.get(),
+                "auto_redeem": auto_redeem_enabled.get(),
+            }
+        )
+
+    auto_press_enabled = tk.BooleanVar(value=cfg.get("auto_press", True))
+    auto_press_enabled.trace_add("write", on_setting_change)
     tk.Checkbutton(
         root,
         text="Auto Press",
@@ -390,7 +420,8 @@ def build_gui():
         cursor="hand2",
     ).pack(pady=(0, 4))
 
-    auto_redeem_enabled = tk.BooleanVar(value=False)
+    auto_redeem_enabled = tk.BooleanVar(value=cfg.get("auto_redeem", False))
+    auto_redeem_enabled.trace_add("write", on_setting_change)
     tk.Checkbutton(
         root,
         text="Auto Redeem (every 30 min)",
