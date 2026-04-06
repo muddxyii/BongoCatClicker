@@ -1,8 +1,8 @@
 # Bongo Cat Manager
 
-> **Fork notice:** This project is a fork of the original [BongoCatClicker](https://github.com/Chiqui89/BongoCatClicker). Big thanks to the original author for the foundation! This fork expands in a different direction, with plans to support auto-redeem for crates every 30 minutes and broader automation management features.
+> **Fork notice:** This project is a fork of the original [BongoCatClicker](https://github.com/Chiqui89/BongoCatClicker). Big thanks to the original author for the foundation! This fork expands in a different direction with broader automation and management features.
 
-A script that automatically manages Bongo Cat, including auto-pressing keys and upcoming crate auto-redeem support.
+A tool that automatically manages Bongo Cat, including auto-pressing keys and auto-redeeming emojis and accessories.
 
 ## Requirements
 
@@ -10,21 +10,26 @@ A script that automatically manages Bongo Cat, including auto-pressing keys and 
 - Bongo Cat (Steam)
 
 ## Installation
-Run `RUN.bat` and it will install dependencies and launch the bot automatically.
+
+Run `RUN.bat` and it will install dependencies and launch the app automatically.
+
+## Features
+
+- **Auto Press** - continuously presses random keys while Bongo Cat is open
+- **Auto Redeem** - uses image recognition to find and click the emoji and accessory redeem buttons every 30 minutes. Searches every 5 seconds on startup until both are found, then starts the timer
+- **Settings persistence** - toggle states are saved and restored between sessions
+- Catppuccin Macchiato theme
 
 ## Usage
 
 - Open Bongo Cat
 - Run `RUN.bat`
-- Press F8 to start/stop the bot
+- Press F8 or click Start to toggle the bot
+- Enable Auto Redeem if you want crates redeemed automatically
 - Close the window to exit
-
-## Planned Features
-
-- **Crate Auto-Redeem:** automatically redeem crates every 30 minutes
 
 ## Notes
 
-- Make sure the BONGO_WINDOW_TITLE in the script matches your Bongo Cat window title exactly
-- Bongo Cat must be open before pressing Start
-- You can't use your PC normally while the bot is running since Bongo Cat needs to stay in focus
+- Bongo Cat must be open and detected before you can press Start
+- Auto Redeem pauses the auto presser briefly while clicking redeem buttons
+- Make sure the `icons/` folder is present next to the script
