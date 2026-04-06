@@ -291,14 +291,14 @@ def toggle_running():
 
     if state:
         if not find_and_focus():
-            set_status("Window not found", "#ffaa00")
+            set_status("Window not found", "#f5a97f")
             with lock:
                 running = False
             return
-        set_status("● Running", "#00ff88")
+        set_status("● Running", "#a6da95")
         btn_toggle.config(text="■ Stop  [" + TOGGLE_KEY + "]")
     else:
-        set_status("● Stopped", "#ff4444")
+        set_status("● Stopped", "#ed8796")
         btn_toggle.config(text="▶ Start  [" + TOGGLE_KEY + "]")
 
 
@@ -329,36 +329,44 @@ def build_gui():
         auto_redeem_enabled, \
         redeem_countdown_label
 
+    # Catppuccin Macchiato
+    C_BASE = "#24273a"
+    C_SURFACE0 = "#363a4f"
+    C_SURFACE1 = "#494d64"
+    C_TEXT = "#cad3f5"
+    C_SUBTEXT0 = "#a5adcb"
+    C_SUBTEXT1 = "#b8c0e0"
+    C_RED = "#ed8796"
+
     root = tk.Tk()
     root.title(WINDOW_TITLE)
     root.geometry("360x320")
     root.resizable(False, False)
-    root.configure(bg="#1e1e2e")
+    root.configure(bg=C_BASE)
     root.protocol("WM_DELETE_WINDOW", on_close)
     root.attributes("-topmost", True)
-    root.attributes("-alpha", 0.95)
+    root.attributes("-alpha", 1.0)
 
     f_title = tkfont.Font(family="Segoe UI", size=15, weight="bold")
     f_status = tkfont.Font(family="Segoe UI", size=12)
     f_btn = tkfont.Font(family="Segoe UI", size=11)
     f_hint = tkfont.Font(family="Segoe UI", size=10)
 
-    tk.Label(
-        root, text="Bongo Cat Manager", font=f_title, bg="#1e1e2e", fg="#cdd6f4"
-    ).pack(pady=(24, 4))
-
-    status_label = tk.Label(
-        root, text="● Stopped", font=f_status, bg="#1e1e2e", fg="#ff4444"
+    tk.Label(root, text="Bongo Cat Manager", font=f_title, bg=C_BASE, fg=C_TEXT).pack(
+        pady=(24, 4)
     )
+
+    status_label = tk.Label(root, text="● Stopped", font=f_status, bg=C_BASE, fg=C_RED)
     status_label.pack(pady=6)
 
     btn_toggle = tk.Button(
         root,
         text="▶ Start  [" + TOGGLE_KEY + "]",
         font=f_btn,
-        bg="#313244",
-        fg="#cdd6f4",
-        activebackground="#45475a",
+        bg=C_SURFACE0,
+        fg=C_TEXT,
+        activebackground=C_SURFACE1,
+        activeforeground=C_TEXT,
         relief="flat",
         padx=20,
         pady=10,
@@ -373,11 +381,11 @@ def build_gui():
         text="Auto Press",
         variable=auto_press_enabled,
         font=f_btn,
-        bg="#1e1e2e",
-        fg="#cdd6f4",
-        activebackground="#1e1e2e",
-        activeforeground="#cdd6f4",
-        selectcolor="#313244",
+        bg=C_BASE,
+        fg=C_TEXT,
+        activebackground=C_BASE,
+        activeforeground=C_TEXT,
+        selectcolor=C_SURFACE0,
         relief="flat",
         cursor="hand2",
     ).pack(pady=(0, 4))
@@ -388,11 +396,11 @@ def build_gui():
         text="Auto Redeem (every 30 min)",
         variable=auto_redeem_enabled,
         font=f_btn,
-        bg="#1e1e2e",
-        fg="#cdd6f4",
-        activebackground="#1e1e2e",
-        activeforeground="#cdd6f4",
-        selectcolor="#313244",
+        bg=C_BASE,
+        fg=C_TEXT,
+        activebackground=C_BASE,
+        activeforeground=C_TEXT,
+        selectcolor=C_SURFACE0,
         relief="flat",
         cursor="hand2",
     ).pack(pady=(0, 4))
@@ -401,8 +409,8 @@ def build_gui():
         root,
         text="",
         font=f_hint,
-        bg="#1e1e2e",
-        fg="#a6adc8",
+        bg=C_BASE,
+        fg=C_SUBTEXT1,
     )
     redeem_countdown_label.pack(pady=2)
 
@@ -410,16 +418,17 @@ def build_gui():
         root,
         text="",
         font=f_hint,
-        bg="#1e1e2e",
+        bg=C_BASE,
+        fg=C_SUBTEXT0,
     )
     bongo_status_label.pack(pady=(2, 12))
 
     def poll_bongo():
         if find_and_focus():
-            bongo_status_label.config(text="● Bongo Cat detected", fg="#00ff88")
+            bongo_status_label.config(text="● Bongo Cat detected", fg="#a6da95")
             btn_toggle.config(state="normal")
         else:
-            bongo_status_label.config(text="● Bongo Cat not detected", fg="#ff4444")
+            bongo_status_label.config(text="● Bongo Cat not detected", fg="#ed8796")
             btn_toggle.config(state="disabled")
             with lock:
                 was_running = running
