@@ -237,13 +237,23 @@ def build_gui():
         cursor="hand2",
     ).pack()
 
-    tk.Label(
+    bongo_status_label = tk.Label(
         root,
-        text="Bongo Cat must be open to start",
+        text="",
         font=f_hint,
         bg="#1e1e2e",
-        fg="#6c7086",
-    ).pack()
+    )
+    bongo_status_label.pack()
+
+    def poll_bongo():
+        if find_and_focus():
+            bongo_status_label.config(text="● Bongo Cat detected", fg="#00ff88")
+        else:
+            bongo_status_label.config(text="● Bongo Cat not detected", fg="#ff4444")
+        root.after(1000, poll_bongo)
+
+    poll_bongo()
+
     # root.bind("<FocusIn>"8, on_focus_in)
     root.bind("<FocusOut>", on_focus_out)
 
