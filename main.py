@@ -248,8 +248,14 @@ def build_gui():
     def poll_bongo():
         if find_and_focus():
             bongo_status_label.config(text="● Bongo Cat detected", fg="#00ff88")
+            btn_toggle.config(state="normal")
         else:
             bongo_status_label.config(text="● Bongo Cat not detected", fg="#ff4444")
+            btn_toggle.config(state="disabled")
+            with lock:
+                was_running = running
+            if was_running:
+                toggle_running()
         root.after(1000, poll_bongo)
 
     poll_bongo()
