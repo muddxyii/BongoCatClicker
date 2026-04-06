@@ -1,5 +1,12 @@
 import os
 import sys
+import ctypes
+
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+except Exception:
+    pass
+
 import pydirectinput
 import win32gui
 import win32api
@@ -324,26 +331,26 @@ def build_gui():
 
     root = tk.Tk()
     root.title(WINDOW_TITLE)
-    root.geometry("280x240")
+    root.geometry("360x320")
     root.resizable(False, False)
     root.configure(bg="#1e1e2e")
     root.protocol("WM_DELETE_WINDOW", on_close)
     root.attributes("-topmost", True)
     root.attributes("-alpha", 0.95)
 
-    f_title = tkfont.Font(family="Segoe UI", size=13, weight="bold")
-    f_status = tkfont.Font(family="Segoe UI", size=11)
-    f_btn = tkfont.Font(family="Segoe UI", size=10)
-    f_hint = tkfont.Font(family="Segoe UI", size=8)
+    f_title = tkfont.Font(family="Segoe UI", size=15, weight="bold")
+    f_status = tkfont.Font(family="Segoe UI", size=12)
+    f_btn = tkfont.Font(family="Segoe UI", size=11)
+    f_hint = tkfont.Font(family="Segoe UI", size=10)
 
     tk.Label(
         root, text="Bongo Cat Manager", font=f_title, bg="#1e1e2e", fg="#cdd6f4"
-    ).pack(pady=(14, 2))
+    ).pack(pady=(24, 4))
 
     status_label = tk.Label(
         root, text="● Stopped", font=f_status, bg="#1e1e2e", fg="#ff4444"
     )
-    status_label.pack(pady=2)
+    status_label.pack(pady=6)
 
     btn_toggle = tk.Button(
         root,
@@ -353,12 +360,12 @@ def build_gui():
         fg="#cdd6f4",
         activebackground="#45475a",
         relief="flat",
-        padx=12,
-        pady=6,
+        padx=20,
+        pady=10,
         cursor="hand2",
         command=toggle_running,
     )
-    btn_toggle.pack(pady=10)
+    btn_toggle.pack(pady=14)
 
     auto_press_enabled = tk.BooleanVar(value=True)
     tk.Checkbutton(
@@ -373,7 +380,7 @@ def build_gui():
         selectcolor="#313244",
         relief="flat",
         cursor="hand2",
-    ).pack()
+    ).pack(pady=(0, 4))
 
     auto_redeem_enabled = tk.BooleanVar(value=False)
     tk.Checkbutton(
@@ -388,7 +395,7 @@ def build_gui():
         selectcolor="#313244",
         relief="flat",
         cursor="hand2",
-    ).pack()
+    ).pack(pady=(0, 4))
 
     redeem_countdown_label = tk.Label(
         root,
@@ -397,7 +404,7 @@ def build_gui():
         bg="#1e1e2e",
         fg="#a6adc8",
     )
-    redeem_countdown_label.pack()
+    redeem_countdown_label.pack(pady=2)
 
     bongo_status_label = tk.Label(
         root,
@@ -405,7 +412,7 @@ def build_gui():
         font=f_hint,
         bg="#1e1e2e",
     )
-    bongo_status_label.pack()
+    bongo_status_label.pack(pady=(2, 12))
 
     def poll_bongo():
         if find_and_focus():
