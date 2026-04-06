@@ -11,7 +11,7 @@ pydirectinput.PAUSE = 0
 
 # ── CONFIG ──────────────────────────────────────────────────────────────────
 BONGO_WINDOW_TITLE = "BongoCat"  # adjust if title differs in your language
-WINDOW_TITLE = "Bongo Cat Clicker"  # adjust if title differs in your language
+WINDOW_TITLE = "Bongo Cat Manager"  # adjust if title differs in your language
 TOGGLE_KEY = "F8"
 INTERVAL_MIN = 0.005
 INTERVAL_MAX = 0.01
@@ -199,7 +199,7 @@ def build_gui():
     f_hint = tkfont.Font(family="Segoe UI", size=8)
 
     tk.Label(
-        root, text="Bongo Cat Clicker", font=f_title, bg="#1e1e2e", fg="#cdd6f4"
+        root, text="Bongo Cat Manager", font=f_title, bg="#1e1e2e", fg="#cdd6f4"
     ).pack(pady=(14, 2))
 
     status_label = tk.Label(

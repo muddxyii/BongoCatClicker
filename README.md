@@ -1,12 +1,16 @@
-# 🐱 Bongo Cat Bot
-A script that automatically presses keys in Bongo Cat.
+# Bongo Cat Manager
+
+> **Fork notice:** This project is a fork of the original [BongoCatClicker](https://github.com/Chiqui89/BongoCatClicker). Big thanks to the original author for the foundation! This fork expands in a different direction, with plans to support auto-redeem for crates every 30 minutes and broader automation management features.
+
+A script that automatically manages Bongo Cat, including auto-pressing keys and upcoming crate auto-redeem support.
+
 ## Requirements
 
 - Python 3.x
 - Bongo Cat (Steam)
 
 ## Installation
-Run `RUN.bat` — it will install dependencies and launch the bot automatically.
+Run `RUN.bat` and it will install dependencies and launch the bot automatically.
 
 ## Usage
 
@@ -14,6 +18,10 @@ Run `RUN.bat` — it will install dependencies and launch the bot automatically.
 - Run `RUN.bat`
 - Press F8 to start/stop the bot
 - Close the window to exit
+
+## Planned Features
+
+- **Crate Auto-Redeem:** automatically redeem crates every 30 minutes
 
 ## Notes
 
