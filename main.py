@@ -78,6 +78,7 @@ _last_toggle = 0.0
 status_label = None
 btn_toggle = None
 root = None
+auto_press_enabled = None
 
 
 def find_and_focus():
@@ -124,10 +125,11 @@ def auto_press_loop():
             find_and_focus()
             last_focus = now
 
-        try:
-            press_inputs(INPUTS)
-        except Exception as e:
-            print(f"[loop] Error: {e}")
+        if auto_press_enabled and auto_press_enabled.get():
+            try:
+                press_inputs(INPUTS)
+            except Exception as e:
+                print(f"[loop] Error: {e}")
 
         time.sleep(random.uniform(INTERVAL_MIN, INTERVAL_MAX))
 
@@ -180,11 +182,11 @@ def on_focus_out(event):
 
 
 def build_gui():
-    global root, status_label, btn_toggle
+    global root, status_label, btn_toggle, auto_press_enabled
 
     root = tk.Tk()
     root.title(WINDOW_TITLE)
-    root.geometry("280x160")
+    root.geometry("280x190")
     root.resizable(False, False)
     root.configure(bg="#1e1e2e")
     root.protocol("WM_DELETE_WINDOW", on_close)
@@ -219,6 +221,21 @@ def build_gui():
         command=toggle_running,
     )
     btn_toggle.pack(pady=10)
+
+    auto_press_enabled = tk.BooleanVar(value=True)
+    tk.Checkbutton(
+        root,
+        text="Auto Press",
+        variable=auto_press_enabled,
+        font=f_btn,
+        bg="#1e1e2e",
+        fg="#cdd6f4",
+        activebackground="#1e1e2e",
+        activeforeground="#cdd6f4",
+        selectcolor="#313244",
+        relief="flat",
+        cursor="hand2",
+    ).pack()
 
     tk.Label(
         root,
